@@ -11,6 +11,9 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Traduce las excepciones de dominio a ProblemDetail (RFC 7807), igual que el resto del monorepo.
+ */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -36,6 +39,19 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleResourceNotFound(ResourceNotFoundException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
         problem.setTitle("Recurso no encontrado");
+        problem.setType(URI.create("about:blank"));
+        problem.setProperty("timestamp", Instant.now());
+        return problem;
+    }
+
+    /**
+     * Reglas de negocio del alta de usuarios (por ejemplo, un REPARTIDOR sin repartidorId).
+     * Sin este handler, la IllegalArgumentException terminaba en un 500.
+     */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ProblemDetail handleIllegalArgument(IllegalArgumentException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+        problem.setTitle("Regla de negocio incumplida");
         problem.setType(URI.create("about:blank"));
         problem.setProperty("timestamp", Instant.now());
         return problem;

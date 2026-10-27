@@ -10,9 +10,11 @@ spring:
     import: "optional:configserver:http://localhost:8888/"
 
   datasource:
-    url: jdbc:mysql://localhost:3306/logitrack_security_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
-    username: root
-    password: 15026
+    # Igual que en el resto del monorepo: los valores reales llegan por variables de entorno
+    # (docker-compose define DB_HOST=mysql y DB_PORT=3306). Nunca credenciales en el repo.
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3307}/${DB_NAME:logitrack_security_db}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: ${DB_USER:logitrack}
+    password: ${DB_PASSWORD:logitrack}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:

@@ -22,7 +22,6 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
 
-    // Kostruttur espliċitu minflok @RequiredArgsConstructor ta' Lombok
     public AuthServiceImpl(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
@@ -42,12 +41,10 @@ public class AuthServiceImpl implements AuthService {
         // Si no se especifica rol, asigna CLIENTE por defecto
         Rol rolAsignado = request.rol() != null ? request.rol() : Rol.CLIENTE;
 
-        // Validación de regla: REPARTIDOR debe tener repartidorId
         if (rolAsignado == Rol.REPARTIDOR && request.repartidorId() == null) {
             throw new IllegalArgumentException("El repartidorId es obligatorio para usuarios con rol REPARTIDOR.");
         }
 
-        // Użu tal-Builder manwali stabbilit fil-klassi Usuario
         Usuario nuevoUsuario = Usuario.builder()
             .username(request.username())
             .email(request.email())

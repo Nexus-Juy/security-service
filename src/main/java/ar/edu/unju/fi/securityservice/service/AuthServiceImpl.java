@@ -7,9 +7,8 @@ import ar.edu.unju.fi.securityservice.exception.BadCredentialsException;
 import ar.edu.unju.fi.securityservice.exception.ResourceNotFoundException;
 import ar.edu.unju.fi.securityservice.exception.UserAlreadyExistsException;
 import ar.edu.unju.fi.securityservice.repository.UsuarioRepository;
-
 import ar.edu.unju.fi.securityservice.service.jwt.JwtUtils;
-import lombok.RequiredArgsConstructor;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,12 +16,18 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
+
+    // Kostruttur espliċitu minflok @RequiredArgsConstructor ta' Lombok
+    public AuthServiceImpl(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils) {
+        this.usuarioRepository = usuarioRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtUtils = jwtUtils;
+    }
 
     @Override
     @Transactional
@@ -42,6 +47,7 @@ public class AuthServiceImpl implements AuthService {
             throw new IllegalArgumentException("El repartidorId es obligatorio para usuarios con rol REPARTIDOR.");
         }
 
+        // Użu tal-Builder manwali stabbilit fil-klassi Usuario
         Usuario nuevoUsuario = Usuario.builder()
             .username(request.username())
             .email(request.email())

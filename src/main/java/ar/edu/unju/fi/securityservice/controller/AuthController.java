@@ -1,9 +1,9 @@
+package ar.edu.unju.fi.securityservice.controller;
 
 import ar.edu.unju.fi.securityservice.dto.*;
 import ar.edu.unju.fi.securityservice.service.AuthService;
 import ar.edu.unju.fi.securityservice.service.jwt.JwtUtils;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,11 +12,16 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/auth")
-@RequiredArgsConstructor
 public class AuthController {
 
     private final AuthService authService;
     private final JwtUtils jwtUtils;
+
+    // Kostruttur espliċitu minflok @RequiredArgsConstructor ta' Lombok
+    public AuthController(AuthService authService, JwtUtils jwtUtils) {
+        this.authService = authService;
+        this.jwtUtils = jwtUtils;
+    }
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {

@@ -1,0 +1,7 @@
+# .dockerignore de security-service (S2-08).
+# Docker lo usa automáticamente al construir con -f security-service/Dockerfile.
+# Se ignora todo y solo se deja pasar lo que la imagen necesita para compilar el módulo.
+*
+!pom.xml
+!*/pom.xml
+!security-service/src/main/

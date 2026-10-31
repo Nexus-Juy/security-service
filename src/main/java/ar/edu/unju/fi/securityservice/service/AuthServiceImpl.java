@@ -13,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -22,10 +23,17 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
 
+    /**
+     * Hash de una contraseña que nadie conoce. Cuando el usuario no existe se compara contra él para que el
+     * login tarde lo mismo que con un usuario real y no revele, por el tiempo de respuesta, qué cuentas existen.
+     */
+    private final String hashFicticio;
+
     public AuthServiceImpl(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtils = jwtUtils;
+        this.hashFicticio = passwordEncoder.encode(UUID.randomUUID().toString());
     }
 
     @Override
@@ -62,10 +70,15 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional(readOnly = true)
     public AuthResponse login(LoginRequest request) {
-        Usuario usuario = usuarioRepository.findByUsername(request.usernameOrEmail())
-            .orElseGet(() -> usuarioRepository.findByEmail(request.usernameOrEmail())
-                .orElseThrow(() -> new BadCredentialsException("Credenciales inválidas.")));
+        Optional<Usuario> encontrado = usuarioRepository.findByUsername(request.usernameOrEmail())
+            .or(() -> usuarioRepository.findByEmail(request.usernameOrEmail()));
 
+        if (encontrado.isEmpty()) {
+            passwordEncoder.matches(request.password(), hashFicticio);
+            throw new BadCredentialsException("Credenciales inválidas.");
+        }
+
+        Usuario usuario = encontrado.get();
         if (!passwordEncoder.matches(request.password(), usuario.getPassword())) {
             throw new BadCredentialsException("Credenciales inválidas.");
         }

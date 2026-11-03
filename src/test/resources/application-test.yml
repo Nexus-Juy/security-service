@@ -14,6 +14,11 @@ spring:
     hibernate:
       ddl-auto: create-drop
 
+# Los tests no se registran en Eureka
+eureka:
+  client:
+    enabled: false
+
 jwt:
   secret: ClaveSecretaDeTestSuperSeguraParaTestsUnitariosLogiTrack2026!
   expiration-ms: 3600000

@@ -63,6 +63,12 @@
         </dependency>
 
         <!-- Spring Cloud Config Client -->
+        <!-- Descubrimiento: el servicio se registra en eureka-server al arrancar (S3-02) -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-config</artifactId>

@@ -17,7 +17,6 @@ public class AuthController {
     private final AuthService authService;
     private final JwtUtils jwtUtils;
 
-    // Kostruttur espliċitu minflok @RequiredArgsConstructor ta' Lombok
     public AuthController(AuthService authService, JwtUtils jwtUtils) {
         this.authService = authService;
         this.jwtUtils = jwtUtils;

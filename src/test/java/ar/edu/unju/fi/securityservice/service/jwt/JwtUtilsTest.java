@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Tests unitarios de {@link JwtUtils}: firma, claims y validación, sin levantar Spring.
@@ -114,5 +116,30 @@ class JwtUtilsTest {
     void rechazaTokenMalformado() {
         assertThat(jwtUtils.validateToken("esto-no-es-un-token")).isFalse();
         assertThat(jwtUtils.validateToken("")).isFalse();
+    }
+
+    @Test
+    @DisplayName("Un secreto de al menos 32 caracteres se acepta al iniciar")
+    void aceptaSecretoSuficientementeLargo() {
+        assertThatCode(() -> jwtUtils.validarSecreto()).doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("Un secreto menor a 256 bits se rechaza al iniciar, antes del primer login")
+    void rechazaSecretoCorto() {
+        ReflectionTestUtils.setField(jwtUtils, "jwtSecret", "clave-corta");
+
+        assertThatThrownBy(() -> jwtUtils.validarSecreto())
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("jwt.secret");
+    }
+
+    @Test
+    @DisplayName("Un token firmado con otro secreto se rechaza")
+    void rechazaTokenFirmadoConOtraClave() {
+        String token = jwtUtils.generateToken(usuario(Rol.ADMIN, null));
+        ReflectionTestUtils.setField(jwtUtils, "jwtSecret", "OtraClaveDistintaParaProbarQueLaFirmaImporta2026!!");
+
+        assertThat(jwtUtils.validateToken(token)).isFalse();
     }
 }

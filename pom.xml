@@ -4,16 +4,38 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>ar.edu.unju.fi.logitrack</groupId>
-        <artifactId>daas-proyecto-final</artifactId>
-        <version>0.1.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>4.0.9</version>
+        <relativePath/>
     </parent>
 
+    <groupId>ar.edu.unju.fi.logitrack</groupId>
     <artifactId>security-service</artifactId>
     <version>0.1.0-SNAPSHOT</version>
     <name>security-service</name>
     <description>Microservicio para gestion de autenticacion, usuarios y emision de JWT</description>
+
+    <properties>
+        <java.version>25</java.version>
+        <spring-cloud.version>2025.1.1</spring-cloud.version>
+        <jacoco.version>0.8.15</jacoco.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <!-- Versiones que antes venían del pom raíz del monorepo -->
+    <dependencyManagement>
+        <dependencies>
+            <!-- Spring Cloud BOM (compatible con Spring Boot 4.0.x) -->
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <!-- Spring Boot Starter Web -->
@@ -41,6 +63,12 @@
         </dependency>
 
         <!-- Spring Cloud Config Client -->
+        <!-- Descubrimiento: el servicio se registra en eureka-server al arrancar (S3-02) -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-config</artifactId>
@@ -78,8 +106,6 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Lombok -->
-
         <!-- Base de datos en memoria H2 para Tests -->
         <dependency>
             <groupId>com.h2database</groupId>
@@ -107,13 +133,45 @@
     </dependencies>
 
 
-                <build>
-                    <plugins>
-                        <plugin>
-                            <groupId>org.springframework.boot</groupId>
-                            <artifactId>spring-boot-maven-plugin</artifactId>
-                        </plugin>
-                    </plugins>
-                </build>
+    <build>
+        <plugins>
+            <!-- Soporte para Mockito en versiones recientes de JDK.
+                 @{argLine} lo completa jacoco:prepare-agent. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>@{argLine} -XX:+EnableDynamicAgentLoading -Xshare:off</argLine>
+                </configuration>
+            </plugin>
+
+            <!-- Cobertura de tests: genera target/site/jacoco/ al final de verify. -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.version}</version>
+                <executions>
+                    <execution>
+                        <id>preparar-agente</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>reporte-cobertura</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

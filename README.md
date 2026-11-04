@@ -8,7 +8,7 @@ login y entrega el token que `shipment-service` y `courier-service` verifican.
 |---|---|
 | Lenguaje | Java 25 |
 | Framework | Spring Boot 4.0.9 · Spring Cloud 2025.1.1 |
-| Puerto | `8083` |
+| Puerto | `8083` (solo red interna) |
 | Base de datos | MySQL 8.4 (H2 en memoria para tests) |
 | Contraseñas | BCrypt, costo 12, sal aleatoria por hash |
 | Tokens | JWT firmado con HS256 |
@@ -49,6 +49,8 @@ El mismo valor tiene que usarse en `security-service`, `shipment-service` y `cou
 | `JWT_SECRET` | Clave de firma de los JWT (mínimo 32 caracteres, obligatoria) |
 | `CONFIG_SERVER_URL` | URL del config server (por defecto `http://localhost:8888`) |
 | `SPRING_PROFILES_ACTIVE` | `dev` (IDE) o `prod` (Docker) |
+
+> Desde la PC no se accede directo: en Docker este puerto no se publica y todo entra por el `api-gateway` (`http://localhost:8066`), que enruta por Eureka.
 
 ## Ejecutar
 

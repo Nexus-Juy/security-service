@@ -36,6 +36,17 @@ public class AuthServiceImpl implements AuthService {
         this.hashFicticio = passwordEncoder.encode(UUID.randomUUID().toString());
     }
 
+    /**
+     * Registra un usuario desde el registro público.
+     * <p>
+     * Siempre crea un CLIENTE sin repartidor vinculado (S4-14). Los ADMIN y los REPARTIDOR no se crean por
+     * acá: para probar están los usuarios de demo que carga {@code UsuariosDemo} al arrancar.
+     * </p>
+     *
+     * @param request datos del registro
+     * @return el token y los datos del usuario creado
+     * @throws UserAlreadyExistsException si el nombre de usuario o el email ya están registrados
+     */
     @Override
     @Transactional
     public AuthResponse register(RegisterRequest request) {
@@ -46,19 +57,11 @@ public class AuthServiceImpl implements AuthService {
             throw new UserAlreadyExistsException("El email '%s' ya está registrado.".formatted(request.email()));
         }
 
-        // Si no se especifica rol, asigna CLIENTE por defecto
-        Rol rolAsignado = request.rol() != null ? request.rol() : Rol.CLIENTE;
-
-        if (rolAsignado == Rol.REPARTIDOR && request.repartidorId() == null) {
-            throw new IllegalArgumentException("El repartidorId es obligatorio para usuarios con rol REPARTIDOR.");
-        }
-
         Usuario nuevoUsuario = Usuario.builder()
             .username(request.username())
             .email(request.email())
             .password(passwordEncoder.encode(request.password()))
-            .rol(rolAsignado)
-            .repartidorId(rolAsignado == Rol.REPARTIDOR ? request.repartidorId() : null)
+            .rol(Rol.CLIENTE)
             .build();
 
         Usuario guardado = usuarioRepository.save(nuevoUsuario);

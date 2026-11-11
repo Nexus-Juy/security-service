@@ -1,7 +1,7 @@
 # security-service · LogiTrack
 
 Microservicio de **usuarios, autenticación y emisión de JWT** de LogiTrack (Desarrollo y Arquitecturas
-Avanzadas de Software, FI UNJu 2026). Registra usuarios con rol (`ADMIN`, `CLIENTE`, `REPARTIDOR`), valida el
+Avanzadas de Software, FI UNJu 2026). Maneja usuarios con rol (`ADMIN`, `CLIENTE`, `REPARTIDOR`), valida el
 login y entrega el token que `shipment-service` y `courier-service` verifican.
 
 | | |
@@ -49,6 +49,7 @@ El mismo valor tiene que usarse en `security-service`, `shipment-service` y `cou
 | `JWT_SECRET` | Clave de firma de los JWT (mínimo 32 caracteres, obligatoria) |
 | `CONFIG_SERVER_URL` | URL del config server (por defecto `http://localhost:8888`) |
 | `SPRING_PROFILES_ACTIVE` | `dev` (IDE) o `prod` (Docker) |
+| `USUARIOS_DEMO_PASSWORD` | Contraseña de los usuarios de demo (ver abajo). Vacía o sin definir: no se crean |
 
 > Desde la PC no se accede directo: en Docker este puerto no se publica y todo entra por el `api-gateway` (`http://localhost:8066`), que enruta por Eureka.
 
@@ -63,9 +64,23 @@ El mismo valor tiene que usarse en `security-service`, `shipment-service` y `cou
 
 | Método | Ruta | Descripción |
 |---|---|---|
-| POST | `/api/v1/auth/register` | Alta de usuario; devuelve el JWT |
+| POST | `/api/v1/auth/register` | Registro público: **siempre crea un CLIENTE** (S4-14); devuelve el JWT |
 | POST | `/api/v1/auth/login` | Login por usuario o email; devuelve el JWT |
 | GET | `/api/v1/auth/me` | Datos del usuario del token |
+
+### Registro solo de clientes y usuarios de demo (S4-14)
+
+El registro público ignora los campos `rol` y `repartidorId`: cualquiera que se registre queda como `CLIENTE`,
+así nadie puede darse permisos de ADMIN o hacerse pasar por un repartidor.
+
+Para probar los otros roles, al arrancar se crean (si no existen) tres usuarios de demo con la contraseña de
+`USUARIOS_DEMO_PASSWORD` (clase `UsuariosDemo`):
+
+| Usuario | Rol |
+|---|---|
+| `gw.admin` | ADMIN |
+| `gw.cliente` | CLIENTE |
+| `gw.repartidor` | REPARTIDOR, vinculado al repartidor `3f6c1a52-8e0b-4d7a-9c11-0a1b2c3d4e01` (Brian Abalos en courier-service) |
 
 ## Docker
 

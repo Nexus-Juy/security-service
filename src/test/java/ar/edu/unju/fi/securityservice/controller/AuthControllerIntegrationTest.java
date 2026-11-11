@@ -1,5 +1,7 @@
 package ar.edu.unju.fi.securityservice.controller;
 
+import ar.edu.unju.fi.securityservice.entity.Usuario;
+import ar.edu.unju.fi.securityservice.enums.Rol;
 import ar.edu.unju.fi.securityservice.repository.UsuarioRepository;
 import com.jayway.jsonpath.JsonPath;
 import io.jsonwebtoken.Jwts;
@@ -109,22 +111,57 @@ class AuthControllerIntegrationTest {
                 .andExpect(jsonPath("$.status").value(409));
     }
 
+    /**
+     * S4-14: aunque el cuerpo pida rol ADMIN, el registro público crea un CLIENTE.
+     *
+     * @throws Exception si falla la petición
+     */
     @Test
-    @DisplayName("Registro: 422 si un REPARTIDOR no trae repartidorId")
-    void registroRepartidorSinIdDevuelve422() throws Exception {
+    @DisplayName("Registro: aunque pida rol ADMIN, se crea como CLIENTE")
+    void registroConRolAdminCreaCliente() throws Exception {
         String body = """
                 {
-                  "username": "carlos",
-                  "email": "carlos@logitrack.com",
+                  "username": "intruso",
+                  "email": "intruso@logitrack.com",
                   "password": "secreto123",
-                  "rol": "REPARTIDOR"
+                  "rol": "ADMIN"
                 }
                 """;
 
         mockMvc.perform(post(AUTH + "/register")
                         .contentType(MediaType.APPLICATION_JSON).content(body))
-                .andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("$.status").value(422));
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.role").value("CLIENTE"));
+
+        assertThat(usuarioRepository.findByUsername("intruso").orElseThrow().getRol()).isEqualTo(Rol.CLIENTE);
+    }
+
+    /**
+     * S4-14: tampoco se puede registrar un REPARTIDOR; se crea un CLIENTE sin repartidor vinculado.
+     *
+     * @throws Exception si falla la petición
+     */
+    @Test
+    @DisplayName("Registro: aunque pida REPARTIDOR con repartidorId, se crea CLIENTE sin repartidor")
+    void registroConRolRepartidorCreaClienteSinRepartidor() throws Exception {
+        String body = """
+                {
+                  "username": "carlos",
+                  "email": "carlos@logitrack.com",
+                  "password": "secreto123",
+                  "rol": "REPARTIDOR",
+                  "repartidorId": "3f6c1a52-8e0b-4d7a-9c11-0a1b2c3d4e01"
+                }
+                """;
+
+        mockMvc.perform(post(AUTH + "/register")
+                        .contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.role").value("CLIENTE"));
+
+        Usuario carlos = usuarioRepository.findByUsername("carlos").orElseThrow();
+        assertThat(carlos.getRol()).isEqualTo(Rol.CLIENTE);
+        assertThat(carlos.getRepartidorId()).isNull();
     }
 
     @Test

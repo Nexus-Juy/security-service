@@ -1,13 +1,23 @@
 package ar.edu.unju.fi.securityservice.dto;
 
-
-import ar.edu.unju.fi.securityservice.enums.Rol;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-import java.util.UUID;
-
+/**
+ * Datos del registro público de usuarios.
+ * <p>
+ * El registro público siempre crea un CLIENTE (S4-14). Si el cuerpo trae otros campos, como {@code rol} o
+ * {@code repartidorId}, se ignoran: nadie puede registrarse solo como ADMIN o REPARTIDOR.
+ * </p>
+ *
+ * @param username nombre de usuario
+ * @param email    email del usuario
+ * @param password contraseña en claro; el máximo es 72 porque BCrypt solo usa los primeros 72 bytes y dos
+ *                 contraseñas distintas podrían quedar iguales al cortarse
+ */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public record RegisterRequest(
     @NotBlank(message = "El nombre de usuario es obligatorio")
     @Size(min = 3, max = 80)
@@ -18,12 +28,6 @@ public record RegisterRequest(
     String email,
 
     @NotBlank(message = "La contraseña es obligatoria")
-    // BCrypt solo procesa los primeros 72 bytes: se limita el máximo para que dos contraseñas distintas
-    // no queden igualadas por truncamiento.
     @Size(min = 8, max = 72, message = "La contraseña debe tener entre 8 y 72 caracteres")
-    String password,
-
-    Rol rol,
-
-    UUID repartidorId
+    String password
 ) {}
